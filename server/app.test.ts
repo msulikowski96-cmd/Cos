@@ -16,6 +16,7 @@ beforeAll(async () => {
   process.env.NVIDIA_API_KEY = "nv-test";
   delete process.env.AI_MODEL;
   delete process.env.NVIDIA_AI_MODEL;
+  delete process.env.NVIDIA_MODEL;
   vi.stubGlobal("fetch", async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
     if (url.startsWith("http://127.0.0.1")) return realFetch(input, init);
@@ -30,7 +31,7 @@ beforeAll(async () => {
     }
     if (url.includes("/chat/completions")) {
       const body = JSON.parse(String(init?.body ?? "{}"));
-      if (body.model === "openai/gpt-oss-20b") return json({ detail: "gone" }, 410); // pierwszy model wycofany → fallback
+      if (body.model === "nvidia/nemotron-3-ultra-550b-a55b") return json({ detail: "gone" }, 410); // pierwszy model wycofany → fallback
       const content = JSON.stringify({ summary: "Lepszy draft macie wy.", winCondition: "Graj wokół Jinx.", lanes: [{ role: "Top", tip: "Garen ma priorytet." }], threats: [{ champion: "Zed", answer: "Stoper." }], teamfight: "Peel na Jinx.", powerSpikes: "6 lvl.", firstMinutes: "Ochrona bota." });
       const parts = [{ reasoning_content: "myślę".repeat(40) }, { content: content.slice(0, 150) }, { content: content.slice(150) }];
       const sse = parts.map((delta) => `data: ${JSON.stringify({ id: "1", object: "chat.completion.chunk", created: 0, model: body.model, choices: [{ index: 0, delta, finish_reason: null }] })}\n\n`).join("") + "data: [DONE]\n\n";
@@ -84,7 +85,7 @@ describe("serwer API", () => {
     expect(lines.some((l) => l.type === "progress")).toBe(true);
     const body = lines[lines.length - 1];
     expect(body.type).toBe("done");
-    expect(body.model).toBe("mistralai/mistral-large-4-1t-a52b");
+    expect(body.model).toBe("openai/gpt-oss-20b");
     expect(body.report.lanes[0]).toMatchObject({ role: "Top", ally: "Garen", enemy: "Darius" });
     expect(body.report.threats[0].champion).toBe("Zed");
 

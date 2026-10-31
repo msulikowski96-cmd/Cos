@@ -154,7 +154,7 @@ function ProgressBar({ progress }: { progress: CoachProgress | null }) {
       <div className="h-2 overflow-hidden rounded-full bg-panel-2">
         <div className="h-full rounded-full bg-gold transition-[width] duration-500" style={{ width: `${pct}%` }} />
       </div>
-      <p className="mt-1.5 text-xs text-muted">Pełna analiza zajmuje zwykle 30–60 sekund (darmowe API modelu).</p>
+      <p className="mt-1.5 text-xs text-muted">Pełna analiza zajmuje zwykle około 1–1,5 minuty (duży model na darmowym API).</p>
     </div>
   );
 }

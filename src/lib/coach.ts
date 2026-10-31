@@ -112,7 +112,16 @@ export function extractJson(text: string): unknown {
   throw new Error("Niedomknięty JSON w odpowiedzi modelu");
 }
 
-const str = (v: unknown, max = 600) => (typeof v === "string" ? v.trim().slice(0, max) : "");
+/** Tekst z odpowiedzi modelu, przycięty na końcu zdania albo słowa, gdy jest za długi. */
+const str = (v: unknown, max = 1000) => {
+  if (typeof v !== "string") return "";
+  const t = v.trim();
+  if (t.length <= max) return t;
+  const cut = t.slice(0, max);
+  const sentence = cut.lastIndexOf(". ");
+  if (sentence > max * 0.6) return cut.slice(0, sentence + 1);
+  return cut.slice(0, cut.lastIndexOf(" ")).replace(/[,;:–-]$/, "") + "…";
+};
 
 /** Sprawdza i porządkuje odpowiedź modelu — interfejs dostaje zawsze ten sam kształt. */
 export function normalizeReport(raw: unknown, d: Draft, mySide: Side): CoachReport {
@@ -131,11 +140,11 @@ export function normalizeReport(raw: unknown, d: Draft, mySide: Side): CoachRepo
   const lanes = ROLES.map((role, i) => {
     const label = ROLE_LABEL[role];
     const match = byName ? rawLanes.find((l) => roleOf(l) === role) : rawLanes[i];
-    return { role: label, ally: name(ours[i]), enemy: name(theirs[i]), tip: str(match?.tip, 400) };
+    return { role: label, ally: name(ours[i]), enemy: name(theirs[i]), tip: str(match?.tip, 800) };
   }).filter((l) => l.tip);
 
   const threats = (Array.isArray(o.threats) ? (o.threats as Record<string, unknown>[]) : [])
-    .map((t) => ({ champion: str(t?.champion, 40), answer: str(t?.answer, 400) }))
+    .map((t) => ({ champion: str(t?.champion, 40), answer: str(t?.answer, 600) }))
     .filter((t) => t.champion && t.answer)
     .slice(0, 3);
 

@@ -49,7 +49,7 @@ npm start              # serwer produkcyjny (frontend + API)
 |---|---|
 | `RIOT_API_KEY` | Mecz na żywo i pula championów. Klucz deweloperski z [developer.riotgames.com](https://developer.riotgames.com) wygasa po 24 h — na stałe złóż wniosek o *Personal/Production key*. |
 | `NVIDIA_API_KEY` | Trener AI (ten sam klucz co w Nexus Sight). |
-| `NVIDIA_AI_MODEL` | Opcjonalnie: model. Domyślnie `openai/gpt-oss-20b`, zapasowy `mistralai/mistral-large-4-1t-a52b`. |
+| `NVIDIA_MODEL` | Opcjonalnie: model. Domyślnie `nvidia/nemotron-3-ultra-550b-a55b` (najlepsze porady, ok. 1,5 min), zapasowy `openai/gpt-oss-20b` (szybszy). |
 | `AI_API_KEY`, `AI_BASE_URL`, `AI_MODEL` | Opcjonalnie: inny dostawca zgodny z API OpenAI (np. OpenAI, Groq, OpenRouter). |
 
 Klucze są tylko na serwerze — przeglądarka nigdy ich nie widzi. Serwer ma limit zapytań na IP (Riot 20/min, AI 6/min) i cache (konto i mastery 10 min, mecz 20 s, analiza AI 30 min).
