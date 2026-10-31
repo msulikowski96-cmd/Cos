@@ -3,3 +3,6 @@ dist
 dist-single
 .cache
 *.log
+dist-server
+.env
+.env.local

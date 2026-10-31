@@ -25,4 +25,5 @@ export default defineConfig({
   base: "./",
   plugins: [react(), tailwindcss(), inlineIcons(), ...(single ? [viteSingleFile()] : [])],
   build: { outDir: single ? "dist-single" : "dist" },
+  server: { proxy: { "/api": "http://localhost:8787" } },
 });

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Search, X, Sparkles } from "lucide-react";
 import { ChampIcon } from "./ChampIcon";
 import { CHAMPIONS, ROLES, ROLE_LABEL, type Role } from "../lib/champs";
-import { suggest, taken, type Draft } from "../lib/analysis";
+import { suggest, taken, type Draft, type Pool } from "../lib/analysis";
 import type { SlotRef } from "./DraftBoard";
 
 interface Props {
@@ -10,11 +10,12 @@ interface Props {
   target: SlotRef;
   onPick: (id: string) => void;
   onClose: () => void;
+  pool?: Pool;
 }
 
 const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]/g, "");
 
-export function ChampionPicker({ draft, target, onPick, onClose }: Props) {
+export function ChampionPicker({ draft, target, onPick, onClose, pool }: Props) {
   const isBan = target.kind === "ban";
   const [query, setQuery] = useState("");
   const [role, setRole] = useState<Role | "all">(isBan ? "all" : ROLES[target.index]);
@@ -38,8 +39,8 @@ export function ChampionPicker({ draft, target, onPick, onClose }: Props) {
     if (isBan) return [];
     const d = structuredClone(draft);
     d[target.side][target.index] = null; // podpowiedzi liczone tak, jakby slot był pusty
-    return suggest(d, target.side, target.index, 4);
-  }, [draft, target, isBan]);
+    return suggest(d, target.side, target.index, 4, pool);
+  }, [draft, target, isBan, pool]);
 
   const list = useMemo(() => {
     const q = norm(query);

@@ -409,7 +409,12 @@ export interface Suggestion {
   champ: Champion;
   delta: number;
   reasons: string[];
+  /** champion z puli gracza (mastery z API Riot) */
+  inPool: boolean;
 }
+
+/** Pula gracza: ID championa → miejsce w rankingu mastery (0 = najwyżej). */
+export type Pool = Record<string, number>;
 
 const PART_REASON: Record<keyof ScoreParts, string> = {
   front: "dodaje frontline",
@@ -425,7 +430,7 @@ export function taken(d: Draft) {
   return new Set([...d.blue, ...d.red, ...d.blueBans, ...d.redBans].filter(Boolean) as string[]);
 }
 
-export function suggest(d: Draft, side: Side, slot: number, limit = 6): Suggestion[] {
+export function suggest(d: Draft, side: Side, slot: number, limit = 6, pool?: Pool): Suggestion[] {
   const role: Role = ROLES[slot];
   const used = taken(d);
   const ours = side === "blue" ? d.blue : d.red;
@@ -443,7 +448,11 @@ export function suggest(d: Draft, side: Side, slot: number, limit = 6): Suggesti
     const edge = enemy.count ? matchup(side === "blue" ? t : enemy, side === "blue" ? enemy : t).value * sign : 0;
     // główna rola championa liczy się trochę bardziej niż poboczna
     const mainRole = c.roles[0] === role ? 1.5 : 0;
-    const delta = t.score - base.score + (edge - baseEdge) + mainRole;
+    // champion, którego gracz dobrze zna, jest wart więcej niż teoretycznie lepszy pick
+    const rank = pool?.[c.id];
+    const inPool = rank !== undefined;
+    const comfort = !inPool ? 0 : rank < 5 ? 6 : rank < 15 ? 4 : 2;
+    const delta = t.score - base.score + (edge - baseEdge) + mainRole + comfort;
 
     const gains = (Object.keys(t.parts) as (keyof ScoreParts)[])
       .map((k) => [k, t.parts[k] - base.parts[k]] as const)
@@ -451,8 +460,9 @@ export function suggest(d: Draft, side: Side, slot: number, limit = 6): Suggesti
       .sort((x, y) => y[1] - x[1])
       .map(([k]) => PART_REASON[k]);
     if (edge - baseEdge >= 2) gains.unshift("dobry na ich skład");
+    if (inPool) gains.unshift("twoja pula");
     if (!gains.length) gains.push(strongestTrait(c));
-    out.push({ champ: c, delta, reasons: gains.slice(0, 2) });
+    out.push({ champ: c, delta, reasons: gains.slice(0, inPool ? 3 : 2), inPool });
   }
   return out.sort((x, y) => y.delta - x.delta).slice(0, limit);
 }

@@ -3,7 +3,10 @@ import { Dices, Eraser, Link2, ArrowLeftRight, Check } from "lucide-react";
 import { DraftBoard, type SlotRef } from "./components/DraftBoard";
 import { ChampionPicker } from "./components/ChampionPicker";
 import { Report } from "./components/Report";
-import { analyzeDraft, emptyDraft, randomDraft, type Draft, type Side } from "./lib/analysis";
+import { RiotPanel } from "./components/RiotPanel";
+import { useServerStatus, type PlayerResponse } from "./lib/api";
+import type { LiveDraft } from "./lib/live";
+import { analyzeDraft, emptyDraft, randomDraft, type Draft, type Pool, type Side } from "./lib/analysis";
 import { decodeDraft, encodeDraft } from "./lib/share";
 import { DDRAGON_VERSION } from "./lib/champs";
 
@@ -29,6 +32,21 @@ export default function App() {
   const [mySide, setMySide] = useState<Side>(readSide);
   const [picking, setPicking] = useState<SlotRef | null>(null);
   const [copied, setCopied] = useState(false);
+  const status = useServerStatus();
+  const [player, setPlayer] = useState<PlayerResponse | null>(null);
+  const [myChampion, setMyChampion] = useState<string | null>(null);
+
+  const pool = useMemo<Pool | undefined>(
+    () => (player?.pool.length ? Object.fromEntries(player.pool.map((c, i) => [c.id, i])) : undefined),
+    [player],
+  );
+
+  const loadLive = (live: LiveDraft) => {
+    setDraft(live.draft);
+    setIsSample(false);
+    if (live.mySide) setMySide(live.mySide);
+    setMyChampion(live.myChampion);
+  };
 
   const result = useMemo(() => analyzeDraft(draft), [draft]);
 
@@ -146,9 +164,19 @@ export default function App() {
         )}
       </div>
 
-      <DraftBoard draft={draft} blue={result.blue} red={result.red} mySide={mySide} onOpen={setPicking} onClear={(ref) => setSlot(ref, null)} />
+      {status?.riot && <RiotPanel status={status} player={player} onPlayer={(p) => { setPlayer(p); if (!p) setMyChampion(null); }} onLive={loadLive} />}
 
-      <Report draft={draft} result={result} mySide={mySide} onPick={(slot, id) => setSlot({ side: mySide, kind: "pick", index: slot }, id)} />
+      <DraftBoard myChampion={myChampion} draft={draft} blue={result.blue} red={result.red} mySide={mySide} onOpen={setPicking} onClear={(ref) => setSlot(ref, null)} />
+
+      <Report
+        draft={draft}
+        result={result}
+        mySide={mySide}
+        pool={pool}
+        ai={!!status?.ai}
+        myChampion={myChampion && draft[mySide].includes(myChampion) ? myChampion : null}
+        onPick={(slot, id) => setSlot({ side: mySide, kind: "pick", index: slot }, id)}
+      />
 
       <footer className="mt-2 border-t border-line pt-4 text-xs leading-relaxed text-muted">
         Nexus Draft · dane championów z Data Dragon (patch <span className="num">{DDRAGON_VERSION}</span>) · oceny cech championów są autorskie i orientacyjne.
@@ -160,6 +188,7 @@ export default function App() {
         <ChampionPicker
           draft={draft}
           target={picking}
+          pool={pool}
           onClose={closePicker}
           onPick={(id) => {
             setSlot(picking, id);

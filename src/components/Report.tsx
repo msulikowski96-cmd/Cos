@@ -1,6 +1,7 @@
 import { CheckCircle2, AlertTriangle, XCircle, Swords, Clock, Target, Sparkles } from "lucide-react";
 import type { ReactNode } from "react";
 import { ChampIcon } from "./ChampIcon";
+import { AiCoach } from "./AiCoach";
 import { DamageBar, PowerCurve, Radar } from "./Charts";
 import { ROLE_LABEL, ROLES } from "../lib/champs";
 import {
@@ -13,6 +14,7 @@ import {
   type DraftResult,
   type Note,
   type PhasePlan,
+  type Pool,
   type Side,
   type TeamAnalysis,
 } from "../lib/analysis";
@@ -30,7 +32,17 @@ function Section({ eyebrow, title, children, className = "" }: { eyebrow: string
   );
 }
 
-export function Report({ draft, result, mySide, onPick }: { draft: Draft; result: DraftResult; mySide: Side; onPick: (slot: number, id: string) => void }) {
+interface ReportProps {
+  draft: Draft;
+  result: DraftResult;
+  mySide: Side;
+  onPick: (slot: number, id: string) => void;
+  pool?: Pool;
+  ai: boolean;
+  myChampion: string | null;
+}
+
+export function Report({ draft, result, mySide, onPick, pool, ai, myChampion }: ReportProps) {
   const { blue, red } = result;
   const me = mySide === "blue" ? blue : red;
   const them = mySide === "blue" ? red : blue;
@@ -41,6 +53,8 @@ export function Report({ draft, result, mySide, onPick }: { draft: Draft; result
   return (
     <div className="grid gap-3 sm:gap-4 lg:grid-cols-2">
       <Forecast result={result} mySide={mySide} className="lg:col-span-2" />
+
+      {ai && <AiCoach draft={draft} mySide={mySide} myChampion={myChampion} />}
 
       <Section eyebrow="Kiedy kto jest silniejszy" title="Krzywa siły" className="lg:col-span-2">
         {bothStarted ? (
@@ -81,7 +95,7 @@ export function Report({ draft, result, mySide, onPick }: { draft: Draft; result
         </div>
       </Section>
 
-      <NextPick draft={draft} side={mySide} onPick={onPick} />
+      <NextPick draft={draft} side={mySide} onPick={onPick} pool={pool} />
     </div>
   );
 }
@@ -257,7 +271,7 @@ function Notes({ side, notes }: { side: Side; notes: Note[] }) {
   );
 }
 
-function NextPick({ draft, side, onPick }: { draft: Draft; side: Side; onPick: (slot: number, id: string) => void }) {
+function NextPick({ draft, side, onPick, pool }: { draft: Draft; side: Side; onPick: (slot: number, id: string) => void; pool?: Pool }) {
   const slots = draft[side];
   const slot = slots.findIndex((s) => !s);
   return (
@@ -272,11 +286,11 @@ function NextPick({ draft, side, onPick }: { draft: Draft; side: Side; onPick: (
         <p className="text-sm text-muted">Usuń championa z dowolnego slotu twojej drużyny, aby zobaczyć alternatywy dopasowane do reszty draftu.</p>
       ) : (
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          {suggest(draft, side, slot).map((s, i) => (
+          {suggest(draft, side, slot, 6, pool).map((s, i) => (
             <button
               key={s.champ.id}
               onClick={() => onPick(slot, s.champ.id)}
-              className="flex min-w-0 items-center gap-3 rounded-xl border border-line bg-ink/40 p-2.5 text-left transition-colors hover:border-gold"
+              className={`flex min-w-0 items-center gap-3 rounded-xl border bg-ink/40 p-2.5 text-left transition-colors hover:border-gold ${s.inPool ? "border-gold/50" : "border-line"}`}
             >
               <span className="w-4 text-center font-display text-lg font-bold text-muted num">{i + 1}</span>
               <ChampIcon id={s.champ.id} size={44} />

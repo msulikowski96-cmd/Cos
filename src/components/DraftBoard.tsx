@@ -16,15 +16,16 @@ interface Props {
   mySide: Side;
   onOpen: (ref: SlotRef) => void;
   onClear: (ref: SlotRef) => void;
+  myChampion?: string | null;
 }
 
 const SIDE_NAME: Record<Side, string> = { blue: "Niebiescy", red: "Czerwoni" };
 
-export function DraftBoard({ draft, blue, red, mySide, onOpen, onClear }: Props) {
+export function DraftBoard({ draft, blue, red, mySide, onOpen, onClear, myChampion }: Props) {
   return (
     <div className="grid grid-cols-2 gap-2 sm:gap-4">
-      <TeamColumn side="blue" draft={draft} team={blue} mine={mySide === "blue"} onOpen={onOpen} onClear={onClear} />
-      <TeamColumn side="red" draft={draft} team={red} mine={mySide === "red"} onOpen={onOpen} onClear={onClear} />
+      <TeamColumn side="blue" draft={draft} team={blue} mine={mySide === "blue"} onOpen={onOpen} onClear={onClear} me={mySide === "blue" ? myChampion : null} />
+      <TeamColumn side="red" draft={draft} team={red} mine={mySide === "red"} onOpen={onOpen} onClear={onClear} me={mySide === "red" ? myChampion : null} />
     </div>
   );
 }
@@ -36,7 +37,9 @@ function TeamColumn({
   mine,
   onOpen,
   onClear,
+  me,
 }: {
+  me?: string | null;
   side: Side;
   draft: Draft;
   team: TeamAnalysis;
@@ -78,7 +81,7 @@ function TeamColumn({
               <button
                 id={`slot-${side}-${i}`}
                 onClick={() => onOpen(ref)}
-                className={`flex min-w-0 flex-1 items-center gap-2 rounded-[10px] border border-line bg-ink/40 p-1.5 transition-colors hover:border-gold ${mirrored ? "flex-row-reverse text-right" : "text-left"}`}
+                className={`flex min-w-0 flex-1 items-center gap-2 rounded-[10px] border bg-ink/40 p-1.5 transition-colors hover:border-gold ${id && id === me ? "border-gold" : "border-line"} ${mirrored ? "flex-row-reverse text-right" : "text-left"}`}
               >
                 {id ? (
                   <ChampIcon id={id} size={40} />
@@ -88,7 +91,10 @@ function TeamColumn({
                   </span>
                 )}
                 <span className="min-w-0 flex-1">
-                  <span className="eyebrow block !text-[0.62rem]">{ROLE_LABEL[role]}</span>
+                  <span className="eyebrow block !text-[0.62rem]">
+                    {ROLE_LABEL[role]}
+                    {id && id === me && <span className="!text-gold"> · ty</span>}
+                  </span>
                   <span className={`block truncate font-label text-[0.95rem] font-bold sm:text-base ${id ? "text-text" : "text-muted"}`}>
                     {id ? CHAMP_BY_ID[id]?.name : "Wybierz"}
                   </span>

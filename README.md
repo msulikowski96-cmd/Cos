@@ -2,7 +2,7 @@
 
 Siostrzany projekt [Nexus Sight](https://github.com/msulikowski96-cmd/lol). Nexus Sight analizuje **gracza**, Nexus Draft analizuje **draft**: ułóż oba składy w champ selekcie, a aplikacja pokaże, kto wygrywa w której fazie gry, czego wam brakuje i kogo wybrać następnego.
 
-Działa w całości w przeglądarce — bez backendu, bez klucza Riot API, bez logowania. Całość po polsku.
+Całość po polsku. Podstawowa analiza działa w samej przeglądarce. Z serwerem i kluczami dochodzą funkcje online: import meczu na żywo z API Riot, Twoja pula championów i trener AI.
 
 ## Funkcje
 
@@ -18,6 +18,9 @@ Działa w całości w przeglądarce — bez backendu, bez klucza Riot API, bez l
 | **Wnioski** | Atuty i zagrożenia obu składów (brak frontline'u, carry bez ochrony, słabsza końcówka…) |
 | **Podpowiedzi picków** | Ranking championów na wolną rolę, z uzasadnieniem („dodaje frontline”, „balansuje obrażenia”) |
 | **Udostępnianie** | Cały draft zapisany w linku — wyślij go drużynie na Discordzie |
+| **Mecz na żywo** *(Riot API)* | Wpisz Riot ID — oba składy i bany z trwającej gry wczytają się same, role są dopasowywane automatycznie (Smite, baza championów) |
+| **Twoja pula** *(Riot API)* | Championowie z najwyższym mastery dostają premię w podpowiedziach i znaczek „twoja pula” |
+| **Trener AI** *(model AI)* | Porady linia po linii, największe zagrożenia, plan na pierwsze minuty, walki i power spike'i — strumieniowo, z paskiem postępu |
 
 ## Jak to działa
 
@@ -32,10 +35,26 @@ Działa w całości w przeglądarce — bez backendu, bez klucza Riot API, bez l
 
 ```bash
 npm install
-npm run dev        # serwer deweloperski
-npm test           # testy silnika analizy
-npm run build      # build produkcyjny do dist/
+cp .env.example .env   # wpisz klucze (plik .env nie trafia do gita)
+npm run dev:server     # API na :8787 (Riot + AI)
+npm run dev            # frontend na :5173, /api przekierowane do serwera
+npm test               # testy silnika, importu meczu, trenera AI i serwera
+npm run build          # frontend do dist/ + serwer do dist-server/
+npm start              # serwer produkcyjny (frontend + API)
 ```
+
+### Klucze
+
+| Zmienna | Do czego |
+|---|---|
+| `RIOT_API_KEY` | Mecz na żywo i pula championów. Klucz deweloperski z [developer.riotgames.com](https://developer.riotgames.com) wygasa po 24 h — na stałe złóż wniosek o *Personal/Production key*. |
+| `NVIDIA_API_KEY` | Trener AI (ten sam klucz co w Nexus Sight). |
+| `NVIDIA_AI_MODEL` | Opcjonalnie: model. Domyślnie `openai/gpt-oss-20b`, zapasowy `mistralai/mistral-large-4-1t-a52b`. |
+| `AI_API_KEY`, `AI_BASE_URL`, `AI_MODEL` | Opcjonalnie: inny dostawca zgodny z API OpenAI (np. OpenAI, Groq, OpenRouter). |
+
+Klucze są tylko na serwerze — przeglądarka nigdy ich nie widzi. Serwer ma limit zapytań na IP (Riot 20/min, AI 6/min) i cache (konto i mastery 10 min, mecz 20 s, analiza AI 30 min).
+
+> W październiku 2026 NVIDIA wycofała modele `qwen/qwen3-next-80b-a3b-instruct` i `meta/llama-3.3-70b-instruct`, których używał Nexus Sight. Serwer Nexus Draft sam przechodzi na kolejny model, jeśli któryś zwraca błąd albo nie zaczyna odpowiadać w 20 s.
 
 Po nowym patchu zaktualizuj listę championów:
 
@@ -46,6 +65,10 @@ npm run sync:champions
 Nowy champion od razu działa (z szacowanymi ocenami). Żeby był dokładniej oceniany, dopisz go do `src/data/ratings.ts`.
 
 ## Wdrożenie
+
+**Render (pełna wersja z Riot i AI):** w Render wybierz **New → Blueprint** i to repozytorium — `render.yaml` ustawi build i start. W zakładce **Environment** wpisz `RIOT_API_KEY` i `NVIDIA_API_KEY`.
+
+**GitHub Pages (tylko wersja offline, bez funkcji online):**
 
 Gotowy workflow GitHub Pages leży w `docs/github-pages-deploy.yml`. Żeby go włączyć:
 

@@ -1,0 +1,19 @@
+# Render Blueprint: New → Blueprint → wybierz to repo. Klucze wpisujesz w panelu Render (sync: false).
+services:
+  - type: web
+    name: nexus-draft
+    runtime: node
+    region: frankfurt
+    plan: free
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/status
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: RIOT_API_KEY
+        sync: false
+      - key: NVIDIA_API_KEY
+        sync: false
+      - key: NVIDIA_AI_MODEL
+        value: qwen/qwen3-next-80b-a3b-instruct

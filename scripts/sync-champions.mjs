@@ -7,7 +7,7 @@ const version = versions[0];
 const data = (await (await fetch(`https://ddragon.leagueoflegends.com/cdn/${version}/data/pl_PL/champion.json`)).json()).data;
 
 const list = Object.values(data)
-  .map((c) => ({ id: c.id, name: c.name, tags: c.tags, range: c.stats.attackrange, magic: c.info.magic, attack: c.info.attack }))
+  .map((c) => ({ id: c.id, key: Number(c.key), name: c.name, tags: c.tags, range: c.stats.attackrange, magic: c.info.magic, attack: c.info.attack }))
   .sort((a, b) => a.name.localeCompare(b.name, "pl"));
 
 const out = `// Plik generowany przez scripts/sync-champions.mjs — nie edytuj ręcznie.
@@ -15,6 +15,8 @@ export const DDRAGON_VERSION = ${JSON.stringify(version)};
 
 export interface RawChampion {
   id: string;
+  /** numeryczne ID championa używane przez API Riot (np. w meczach na żywo) */
+  key: number;
   name: string;
   tags: string[];
   range: number;

@@ -54,4 +54,7 @@ export const CHAMPIONS: Champion[] = RAW_CHAMPIONS.map((raw) => {
 
 export const CHAMP_BY_ID: Record<string, Champion> = Object.fromEntries(CHAMPIONS.map((c) => [c.id, c]));
 
+/** numeryczne ID z API Riot → ID championa (np. 266 → "Aatrox") */
+export const CHAMP_ID_BY_KEY: Record<number, string> = Object.fromEntries(RAW_CHAMPIONS.map((c) => [c.key, c.id]));
+
 export { DDRAGON_VERSION };
