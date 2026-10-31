@@ -68,6 +68,8 @@ async function runModel(client: OpenAI, model: string, system: string, user: str
         onProgress(text.length ? { phase: "writing", chars: text.length } : { phase: "thinking", chars: thinking });
       }
     }
+    // Przerwany strumień potrafi zakończyć się bez wyjątku — nie zwracamy wtedy urwanego tekstu.
+    if (ctrl.signal.aborted) throw new Error(started ? "przekroczono czas generowania" : "model nie zaczął odpowiadać");
     return text;
   } catch (e) {
     if (ctrl.signal.aborted) throw new Error(started ? "przekroczono czas generowania" : "model nie zaczął odpowiadać");
