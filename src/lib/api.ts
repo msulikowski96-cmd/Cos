@@ -64,7 +64,7 @@ export async function fetchCoach(draft: Draft, mySide: Side, myChampion: string 
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
   let buf = "";
-  let expected = 2200;
+  let expected = 3600;
   for (;;) {
     const { value, done } = await reader.read();
     buf += decoder.decode(value, { stream: !done });

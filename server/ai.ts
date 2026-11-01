@@ -7,19 +7,20 @@ import type { Draft, Side } from "../src/lib/analysis";
 const apiKey = () => (process.env.AI_API_KEY || process.env.NVIDIA_API_KEY || "").trim();
 const baseURL = () => process.env.AI_BASE_URL?.trim() || "https://integrate.api.nvidia.com/v1";
 
-// Sprawdzone w październiku 2026 na darmowym API NVIDIA: gpt-oss-20b odpowiada stabilnie (~25 s),
-// wcześniejsze qwen3-next i llama-3.3-70b zostały wycofane. Zmienne środowiskowe mają pierwszeństwo.
-const DEFAULT_MODELS = ["openai/gpt-oss-20b", "mistralai/mistral-large-4-1t-a52b"];
+// Sprawdzone w październiku 2026 na darmowym API NVIDIA: nemotron-3-ultra daje najlepsze porady (~85 s),
+// gpt-oss-20b jest szybszym zapasem (~30–60 s). Wcześniejsze qwen3-next i llama-3.3-70b wycofano.
+// Zmienne środowiskowe (AI_MODEL, NVIDIA_MODEL, NVIDIA_AI_MODEL) mają pierwszeństwo.
+const DEFAULT_MODELS = ["nvidia/nemotron-3-ultra-550b-a55b", "openai/gpt-oss-20b"];
 const models = () =>
-  [...new Set([process.env.AI_MODEL, process.env.NVIDIA_AI_MODEL, ...DEFAULT_MODELS].map((m) => m?.trim()).filter(Boolean) as string[])].slice(0, 3);
+  [...new Set([process.env.AI_MODEL, process.env.NVIDIA_MODEL, process.env.NVIDIA_AI_MODEL, ...DEFAULT_MODELS].map((m) => m?.trim()).filter(Boolean) as string[])].slice(0, 3);
 
 export const aiEnabled = () => apiKey().length > 0;
 
 /** Ile czasu czekamy na pierwszy token, zanim przejdziemy do kolejnego modelu. */
-const FIRST_TOKEN_MS = 20_000;
-const TOTAL_MS = 100_000;
+const FIRST_TOKEN_MS = 30_000;
+const TOTAL_MS = 170_000;
 /** Typowa długość odpowiedzi (znaki treści) — do paska postępu. */
-export const EXPECTED_CHARS = 2200;
+export const EXPECTED_CHARS = 3600;
 
 const cache = new Map<string, { at: number; report: CoachReport; model: string }>();
 const TTL = 30 * 60_000;
@@ -43,7 +44,7 @@ async function runModel(client: OpenAI, model: string, system: string, user: str
         model,
         stream: true,
         temperature: 0.4,
-        max_tokens: 4000,
+        max_tokens: 6000,
         messages: [
           { role: "system", content: system },
           { role: "user", content: user },
@@ -67,6 +68,8 @@ async function runModel(client: OpenAI, model: string, system: string, user: str
         onProgress(text.length ? { phase: "writing", chars: text.length } : { phase: "thinking", chars: thinking });
       }
     }
+    // Przerwany strumień potrafi zakończyć się bez wyjątku — nie zwracamy wtedy urwanego tekstu.
+    if (ctrl.signal.aborted) throw new Error(started ? "przekroczono czas generowania" : "model nie zaczął odpowiadać");
     return text;
   } catch (e) {
     if (ctrl.signal.aborted) throw new Error(started ? "przekroczono czas generowania" : "model nie zaczął odpowiadać");

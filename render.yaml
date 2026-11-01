@@ -15,5 +15,5 @@ services:
         sync: false
       - key: NVIDIA_API_KEY
         sync: false
-      - key: NVIDIA_AI_MODEL
-        value: qwen/qwen3-next-80b-a3b-instruct
+      - key: NVIDIA_MODEL
+        value: nvidia/nemotron-3-ultra-550b-a55b

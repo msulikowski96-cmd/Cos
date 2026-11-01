@@ -74,6 +74,13 @@ describe("trener AI — parsowanie odpowiedzi", () => {
     expect(r.threats).toHaveLength(1);
   });
 
+  it("długą poradę przycina na końcu zdania, nie w pół słowa", () => {
+    const long = "Graj bezpiecznie do lvl 6. ".repeat(40) + "Kup Control Ward.";
+    const tip = normalizeReport({ summary: "S", lanes: [{ role: "Top", tip: long }] }, d, "blue").lanes[0].tip;
+    expect(tip.length).toBeLessThanOrEqual(800);
+    expect(tip.endsWith(".")).toBe(true);
+  });
+
   it("odrzuca pustą odpowiedź", () => {
     expect(() => normalizeReport({}, d, "blue")).toThrow();
   });
