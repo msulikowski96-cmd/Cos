@@ -26,5 +26,5 @@ export interface RawChampion {
 
 export const RAW_CHAMPIONS: RawChampion[] = ${JSON.stringify(list, null, 0).replace(/\},\{/g, "},\n  {")};
 `;
-writeFileSync(new URL("../src/data/champions.generated.ts", import.meta.url), out);
+writeFileSync(new URL("../lib/draft-core/src/data/champions.generated.ts", import.meta.url), out);
 console.log(`Zapisano ${list.length} championów (patch ${version}).`);

@@ -1,4 +1,4 @@
-# Render Blueprint: New → Blueprint → wybierz to repo. Klucze wpisujesz w panelu Render (sync: false).
+# Render Blueprint: New → Blueprint → wybierz to repo. Sekrety wpisujesz w panelu Render (sync: false).
 services:
   - type: web
     name: nexus-draft
@@ -11,6 +11,12 @@ services:
     envVars:
       - key: NODE_VERSION
         value: "22"
+      - key: DATABASE_URL
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: ADMIN_PASSWORD
+        sync: false
       - key: RIOT_API_KEY
         sync: false
       - key: NVIDIA_API_KEY

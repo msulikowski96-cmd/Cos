@@ -1,0 +1,1100 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: LoL Stats Checker API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: summoner
+    description: Summoner and stats operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /summoner/search:
+    get:
+      operationId: searchSummoner
+      tags: [summoner]
+      summary: Search for a summoner by Riot ID
+      parameters:
+        - name: gameName
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: tagLine
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: region
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Summoner found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SummonerProfile"
+        "404":
+          description: Summoner not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /summoner/{puuid}/ranked:
+    get:
+      operationId: getSummonerRanked
+      tags: [summoner]
+      summary: Get ranked stats for a summoner
+      parameters:
+        - name: puuid
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: region
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Ranked stats
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RankedEntry"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /summoner/{puuid}/matches:
+    get:
+      operationId: getSummonerMatches
+      tags: [summoner]
+      summary: Get recent match history for a summoner
+      parameters:
+        - name: puuid
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: region
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: count
+          in: query
+          required: false
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Match history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MatchSummary"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /summoner/{puuid}/mastery:
+    get:
+      operationId: getSummonerMastery
+      tags: [summoner]
+      summary: Get champion mastery for a summoner
+      parameters:
+        - name: puuid
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: region
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: count
+          in: query
+          required: false
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Champion mastery list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ChampionMastery"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /summoner/{puuid}/analysis:
+    get:
+      operationId: getSummonerAnalysis
+      tags: [summoner]
+      summary: Deep statistical analysis of a summoner's performance
+      parameters:
+        - name: puuid
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: region
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: count
+          in: query
+          required: false
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Performance analysis
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlayerAnalysis"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /summoner/{puuid}/live:
+    get:
+      operationId: getLiveGame
+      tags: [summoner]
+      summary: Check if summoner is currently in a game
+      parameters:
+        - name: puuid
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: region
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: summonerId
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Live game data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LiveGame"
+        "404":
+          description: Not in game
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    ApiError:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+      required:
+        - error
+        - message
+    SummonerProfile:
+      type: object
+      properties:
+        puuid:
+          type: string
+        gameName:
+          type: string
+        tagLine:
+          type: string
+        summonerId:
+          type: string
+        summonerLevel:
+          type: number
+        profileIconId:
+          type: number
+        region:
+          type: string
+      required:
+        - puuid
+        - gameName
+        - tagLine
+        - summonerId
+        - summonerLevel
+        - profileIconId
+        - region
+    RankedEntry:
+      type: object
+      properties:
+        queueType:
+          type: string
+        tier:
+          type: string
+        rank:
+          type: string
+        leaguePoints:
+          type: number
+        wins:
+          type: number
+        losses:
+          type: number
+        hotStreak:
+          type: boolean
+        veteran:
+          type: boolean
+        freshBlood:
+          type: boolean
+        inactive:
+          type: boolean
+      required:
+        - queueType
+        - tier
+        - rank
+        - leaguePoints
+        - wins
+        - losses
+        - hotStreak
+        - veteran
+        - freshBlood
+        - inactive
+    MatchOpponent:
+      type: object
+      properties:
+        championName:
+          type: string
+        kills:
+          type: number
+        deaths:
+          type: number
+        assists:
+          type: number
+      required:
+        - championName
+        - kills
+        - deaths
+        - assists
+    MatchSummary:
+      type: object
+      properties:
+        matchId:
+          type: string
+        gameMode:
+          type: string
+        gameDuration:
+          type: number
+        gameEndTimestamp:
+          type: number
+        win:
+          type: boolean
+        championName:
+          type: string
+        championId:
+          type: number
+        kills:
+          type: number
+        deaths:
+          type: number
+        assists:
+          type: number
+        totalDamageDealt:
+          type: number
+        goldEarned:
+          type: number
+        cs:
+          type: number
+        visionScore:
+          type: number
+        items:
+          type: array
+          items:
+            type: number
+        summoner1Id:
+          type: number
+        summoner2Id:
+          type: number
+        perks:
+          type: object
+          properties:
+            primaryStyleId:
+              type: number
+            subStyleId:
+              type: number
+          required:
+            - primaryStyleId
+            - subStyleId
+        opScore:
+          type: number
+        opponent:
+          nullable: true
+          oneOf:
+            - $ref: "#/components/schemas/MatchOpponent"
+        participants:
+          type: array
+          items:
+            $ref: "#/components/schemas/MatchParticipant"
+      required:
+        - matchId
+        - gameMode
+        - gameDuration
+        - gameEndTimestamp
+        - win
+        - championName
+        - championId
+        - kills
+        - deaths
+        - assists
+        - totalDamageDealt
+        - goldEarned
+        - cs
+        - visionScore
+        - items
+        - summoner1Id
+        - summoner2Id
+        - perks
+        - opScore
+        - participants
+    MatchParticipant:
+      type: object
+      properties:
+        summonerName:
+          type: string
+        puuid:
+          type: string
+        championName:
+          type: string
+        kills:
+          type: number
+        deaths:
+          type: number
+        assists:
+          type: number
+        cs:
+          type: number
+        totalDamageDealt:
+          type: number
+        goldEarned:
+          type: number
+        win:
+          type: boolean
+        teamId:
+          type: number
+        items:
+          type: array
+          items:
+            type: number
+        opScore:
+          type: number
+      required:
+        - summonerName
+        - puuid
+        - championName
+        - kills
+        - deaths
+        - assists
+        - cs
+        - totalDamageDealt
+        - goldEarned
+        - win
+        - teamId
+        - items
+        - opScore
+    ChampionMastery:
+      type: object
+      properties:
+        championId:
+          type: number
+        championName:
+          type: string
+        championLevel:
+          type: number
+        championPoints:
+          type: number
+        lastPlayTime:
+          type: number
+      required:
+        - championId
+        - championName
+        - championLevel
+        - championPoints
+        - lastPlayTime
+    PerformanceMetric:
+      type: object
+      properties:
+        name:
+          type: string
+        value:
+          type: number
+        maxValue:
+          type: number
+        rating:
+          type: string
+        description:
+          type: string
+      required:
+        - name
+        - value
+        - maxValue
+        - rating
+        - description
+    ChampionStats:
+      type: object
+      properties:
+        championName:
+          type: string
+        gamesPlayed:
+          type: number
+        wins:
+          type: number
+        losses:
+          type: number
+        winRate:
+          type: number
+        avgKills:
+          type: number
+        avgDeaths:
+          type: number
+        avgAssists:
+          type: number
+        avgCs:
+          type: number
+        avgCsPerMin:
+          type: number
+        avgDamage:
+          type: number
+        avgGold:
+          type: number
+        avgVisionScore:
+          type: number
+        kda:
+          type: number
+        killParticipation:
+          type: number
+        damageShare:
+          type: number
+        performanceScore:
+          type: number
+      required:
+        - championName
+        - gamesPlayed
+        - wins
+        - losses
+        - winRate
+        - avgKills
+        - avgDeaths
+        - avgAssists
+        - avgCs
+        - avgCsPerMin
+        - avgDamage
+        - avgGold
+        - avgVisionScore
+        - kda
+        - killParticipation
+        - damageShare
+        - performanceScore
+    FormTrend:
+      type: object
+      properties:
+        recentWinRate:
+          type: number
+        overallWinRate:
+          type: number
+        recentKda:
+          type: number
+        overallKda:
+          type: number
+        trend:
+          type: string
+        trendDescription:
+          type: string
+        recentGames:
+          type: number
+      required:
+        - recentWinRate
+        - overallWinRate
+        - recentKda
+        - overallKda
+        - trend
+        - trendDescription
+        - recentGames
+    GameHighlight:
+      type: object
+      properties:
+        matchId:
+          type: string
+        championName:
+          type: string
+        kills:
+          type: number
+        deaths:
+          type: number
+        assists:
+          type: number
+        kda:
+          type: number
+        totalDamageDealt:
+          type: number
+        win:
+          type: boolean
+        gameDuration:
+          type: number
+        performanceScore:
+          type: number
+        gameEndTimestamp:
+          type: number
+      required:
+        - matchId
+        - championName
+        - kills
+        - deaths
+        - assists
+        - kda
+        - totalDamageDealt
+        - win
+        - gameDuration
+        - performanceScore
+        - gameEndTimestamp
+    ChampionRecommendation:
+      type: object
+      properties:
+        championName:
+          type: string
+        reason:
+          type: string
+        playstyleMatch:
+          type: string
+      required:
+        - championName
+        - reason
+        - playstyleMatch
+    GameLengthStats:
+      type: object
+      properties:
+        label:
+          type: string
+        gamesPlayed:
+          type: number
+        winRate:
+          type: number
+        avgKda:
+          type: number
+        avgCsPerMin:
+          type: number
+      required:
+        - label
+        - gamesPlayed
+        - winRate
+        - avgKda
+        - avgCsPerMin
+    PerformanceByGameLength:
+      type: object
+      properties:
+        short:
+          $ref: "#/components/schemas/GameLengthStats"
+        medium:
+          $ref: "#/components/schemas/GameLengthStats"
+        long:
+          $ref: "#/components/schemas/GameLengthStats"
+      required:
+        - short
+        - medium
+        - long
+    DamageTypeBreakdown:
+      type: object
+      properties:
+        physicalPct:
+          type: number
+        magicPct:
+          type: number
+        truePct:
+          type: number
+      required:
+        - physicalPct
+        - magicPct
+        - truePct
+    CurrentStreak:
+      type: object
+      properties:
+        type:
+          type: string
+        count:
+          type: number
+      required:
+        - type
+        - count
+    PredictedTier:
+      type: object
+      properties:
+        tier:
+          type: string
+        division:
+          type: string
+        lp:
+          type: number
+        confidence:
+          type: string
+        description:
+          type: string
+      required:
+        - tier
+        - division
+        - lp
+        - confidence
+        - description
+    PlaystyleRadar:
+      type: object
+      properties:
+        aggression:
+          type: number
+        farming:
+          type: number
+        vision:
+          type: number
+        teamfighting:
+          type: number
+        carry:
+          type: number
+      required:
+        - aggression
+        - farming
+        - vision
+        - teamfighting
+        - carry
+    LiveGameParticipant:
+      type: object
+      properties:
+        puuid:
+          type: string
+        summonerName:
+          type: string
+        championId:
+          type: number
+        championName:
+          type: string
+        teamId:
+          type: number
+        spell1Id:
+          type: number
+        spell2Id:
+          type: number
+        rankedTier:
+          type: string
+        rankedDivision:
+          type: string
+        rankedLP:
+          type: number
+        rankedWins:
+          type: number
+        rankedLosses:
+          type: number
+        perks:
+          type: object
+          properties:
+            perkIds:
+              type: array
+              items:
+                type: number
+            perkStyle:
+              type: number
+            perkSubStyle:
+              type: number
+          required:
+            - perkIds
+            - perkStyle
+            - perkSubStyle
+      required:
+        - puuid
+        - summonerName
+        - championId
+        - championName
+        - teamId
+        - spell1Id
+        - spell2Id
+        - rankedTier
+        - rankedDivision
+        - rankedLP
+        - rankedWins
+        - rankedLosses
+        - perks
+    LiveGameBan:
+      type: object
+      properties:
+        championId:
+          type: number
+        championName:
+          type: string
+        teamId:
+          type: number
+        pickTurn:
+          type: number
+      required:
+        - championId
+        - championName
+        - teamId
+        - pickTurn
+    LiveGame:
+      type: object
+      properties:
+        gameId:
+          type: number
+        gameMode:
+          type: string
+        gameType:
+          type: string
+        gameLength:
+          type: number
+        mapId:
+          type: number
+        participants:
+          type: array
+          items:
+            $ref: "#/components/schemas/LiveGameParticipant"
+        bans:
+          type: array
+          items:
+            $ref: "#/components/schemas/LiveGameBan"
+      required:
+        - gameId
+        - gameMode
+        - gameType
+        - gameLength
+        - mapId
+        - participants
+        - bans
+    LanePhaseStats:
+      type: object
+      properties:
+        firstBloodRate:
+          type: number
+        avgEarlyKills:
+          type: number
+        avgCsAdvantage:
+          type: number
+        earlyPressureScore:
+          type: number
+        grade:
+          type: string
+        description:
+          type: string
+      required:
+        - firstBloodRate
+        - avgEarlyKills
+        - avgCsAdvantage
+        - earlyPressureScore
+        - grade
+        - description
+    ObjectiveStats:
+      type: object
+      properties:
+        avgTurretKills:
+          type: number
+        avgDragonKills:
+          type: number
+        avgObjectivesStolen:
+          type: number
+        avgInhibitorKills:
+          type: number
+        objectiveControlScore:
+          type: number
+        grade:
+          type: string
+        description:
+          type: string
+      required:
+        - avgTurretKills
+        - avgDragonKills
+        - avgObjectivesStolen
+        - avgInhibitorKills
+        - objectiveControlScore
+        - grade
+        - description
+    DeathAnalysis:
+      type: object
+      properties:
+        avgDeaths:
+          type: number
+        avgTimeDeadPct:
+          type: number
+        deathSpikeGames:
+          type: number
+        deathSpikeRate:
+          type: number
+        mostDeathsInGame:
+          type: number
+        avgBountyGold:
+          type: number
+        deathScore:
+          type: number
+        grade:
+          type: string
+        description:
+          type: string
+      required:
+        - avgDeaths
+        - avgTimeDeadPct
+        - deathSpikeGames
+        - deathSpikeRate
+        - mostDeathsInGame
+        - avgBountyGold
+        - deathScore
+        - grade
+        - description
+    TiltIndicator:
+      type: object
+      properties:
+        score:
+          type: number
+        description:
+          type: string
+        lossStreakKdaDrop:
+          type: number
+        isTilted:
+          type: boolean
+      required:
+        - score
+        - description
+        - lossStreakKdaDrop
+        - isTilted
+    WinConditionFactor:
+      type: object
+      properties:
+        factor:
+          type: string
+        winAvg:
+          type: number
+        lossAvg:
+          type: number
+        impact:
+          type: number
+        description:
+          type: string
+      required:
+        - factor
+        - winAvg
+        - lossAvg
+        - impact
+        - description
+    WinConditions:
+      type: object
+      properties:
+        factors:
+          type: array
+          items:
+            $ref: "#/components/schemas/WinConditionFactor"
+        summary:
+          type: string
+      required:
+        - factors
+        - summary
+    PowerCurvePhase:
+      type: object
+      properties:
+        phase:
+          type: string
+        label:
+          type: string
+        winRate:
+          type: number
+        avgKda:
+          type: number
+        avgPerformance:
+          type: number
+        gamesPlayed:
+          type: number
+      required:
+        - phase
+        - label
+        - winRate
+        - avgKda
+        - avgPerformance
+        - gamesPlayed
+    PowerCurve:
+      type: object
+      properties:
+        phases:
+          type: array
+          items:
+            $ref: "#/components/schemas/PowerCurvePhase"
+        strongestPhase:
+          type: string
+        description:
+          type: string
+      required:
+        - phases
+        - strongestPhase
+        - description
+    PlayerAnalysis:
+      type: object
+      properties:
+        overallScore:
+          type: number
+        overallRating:
+          type: string
+        totalGamesAnalyzed:
+          type: number
+        winRate:
+          type: number
+        metrics:
+          type: array
+          items:
+            $ref: "#/components/schemas/PerformanceMetric"
+        championBreakdown:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChampionStats"
+        formTrend:
+          $ref: "#/components/schemas/FormTrend"
+        strengths:
+          type: array
+          items:
+            type: string
+        weaknesses:
+          type: array
+          items:
+            type: string
+        playstyleArchetype:
+          type: string
+        playstyleDescription:
+          type: string
+        criticalMistakes:
+          type: array
+          items:
+            type: string
+        gameplayPatterns:
+          type: array
+          items:
+            type: string
+        primaryRole:
+          type: string
+        roleDistribution:
+          type: object
+          additionalProperties:
+            type: number
+        currentStreak:
+          $ref: "#/components/schemas/CurrentStreak"
+        bestGame:
+          nullable: true
+          oneOf:
+            - $ref: "#/components/schemas/GameHighlight"
+        worstGame:
+          nullable: true
+          oneOf:
+            - $ref: "#/components/schemas/GameHighlight"
+        coachingTips:
+          type: array
+          items:
+            type: string
+        championRecommendations:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChampionRecommendation"
+        performanceByGameLength:
+          $ref: "#/components/schemas/PerformanceByGameLength"
+        damageTypeBreakdown:
+          $ref: "#/components/schemas/DamageTypeBreakdown"
+        predictedTier:
+          $ref: "#/components/schemas/PredictedTier"
+        playstyleRadar:
+          $ref: "#/components/schemas/PlaystyleRadar"
+        lanePhaseStats:
+          $ref: "#/components/schemas/LanePhaseStats"
+        objectiveStats:
+          $ref: "#/components/schemas/ObjectiveStats"
+        deathAnalysis:
+          $ref: "#/components/schemas/DeathAnalysis"
+        tiltIndicator:
+          $ref: "#/components/schemas/TiltIndicator"
+        winConditions:
+          $ref: "#/components/schemas/WinConditions"
+        powerCurve:
+          $ref: "#/components/schemas/PowerCurve"
+      required:
+        - overallScore
+        - overallRating
+        - totalGamesAnalyzed
+        - winRate
+        - metrics
+        - championBreakdown
+        - formTrend
+        - strengths
+        - weaknesses
+        - playstyleArchetype
+        - playstyleDescription
+        - criticalMistakes
+        - gameplayPatterns
+        - primaryRole
+        - roleDistribution
+        - currentStreak
+        - coachingTips
+        - championRecommendations
+        - performanceByGameLength
+        - damageTypeBreakdown
+        - predictedTier
+        - playstyleRadar
+        - lanePhaseStats
+        - objectiveStats
+        - deathAnalysis
+        - tiltIndicator
+        - winConditions
+        - powerCurve

@@ -6,3 +6,7 @@ dist-single
 dist-server
 .env
 .env.local
+.local
+*.tsbuildinfo
+lib/*/dist
+artifacts/*/dist
