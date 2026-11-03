@@ -10,3 +10,5 @@ dist-server
 *.tsbuildinfo
 lib/*/dist
 artifacts/*/dist
+.wrangler
+.dev.vars

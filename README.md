@@ -45,3 +45,21 @@ Szczegóły algorytmów: `ALGORITHM_V2.md`, raport AI: `AI_REPORT_V3.md`.
 ---
 
 Nexus Draft nie jest powiązany z Riot Games. League of Legends i grafiki championów są własnością Riot Games, Inc.
+
+## Wdrożenie (Cloudflare Workers)
+
+Druga wersja produkcyjna: https://nexus-draft.msulikowski96.workers.dev (bez usypiania jak na darmowym Render).
+Ten sam serwer Express działa na Workers przez `httpServerHandler`; adaptery są w `cloudflare/`
+(baza: osobny klient pg na każde żądanie, logi przez console). Konfiguracja: `wrangler.jsonc`.
+
+```bash
+npx vite build --config artifacts/web/vite.config.ts
+npx wrangler secret put DATABASE_URL     # ta sama baza Neon co na Render
+npx wrangler secret put SESSION_SECRET
+npx wrangler secret put RIOT_API_KEY
+npx wrangler secret put NVIDIA_API_KEY
+npx wrangler deploy
+```
+
+Ograniczenia wersji Cloudflare: generowanie obrazków kart (`/api/card`) jest wyłączone,
+a `ffmpeg-core.wasm` (32 MB, ponad limit 25 MB na plik) jest serwowany z unpkg.

@@ -1,0 +1,30 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "nexus-draft",
+  "main": "cloudflare/entry.ts",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  "upload_source_maps": true,
+  "assets": {
+    "directory": "./artifacts/web/dist/public",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*", "/ffmpeg-core.wasm"]
+  },
+  "alias": {
+    "@workspace/db": "./cloudflare/db/index.ts",
+    "@workspace/db/schema": "./cloudflare/db/schema.ts",
+    "pino": "./cloudflare/pino.ts",
+    "pino-http": "./cloudflare/pino-http.ts",
+    "satori": "./cloudflare/card-stub.ts",
+    "@resvg/resvg-js": "./cloudflare/card-stub.ts"
+  },
+  // Kod liczy ścieżki z import.meta.url (Node); w paczce Workera to pole jest puste.
+  "define": { "import.meta.url": "\"file:///worker/entry.js\"" },
+  "vars": {
+    "NODE_ENV": "production",
+    "NVIDIA_MODEL": "nvidia/nemotron-3-ultra-550b-a55b",
+    "NVIDIA_FAST_MODEL": "openai/gpt-oss-20b"
+  }
+  // Sekrety (npx wrangler secret put …): DATABASE_URL, SESSION_SECRET, RIOT_API_KEY, NVIDIA_API_KEY
+}
