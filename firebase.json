@@ -1,0 +1,26 @@
+{
+  "firestore": [
+    {
+      "database": "ai-studio-lol-c30a8c79-ac15-43bf-a7e6-791d95e840d5",
+      "rules": "firestore.rules"
+    },
+    {
+      "database": "(default)",
+      "rules": "firestore.rules"
+    }
+  ],
+  "hosting": {
+    "public": "artifacts/web/dist/public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}

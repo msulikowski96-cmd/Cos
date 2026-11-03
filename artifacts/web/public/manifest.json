@@ -1,0 +1,18 @@
+{
+  "name": "Nexus Sight — Statystyki League of Legends",
+  "short_name": "Nexus Sight",
+  "description": "Darmowe narzędzie do analizy statystyk graczy League of Legends. Rangi, historia meczy, analiza AI i live game.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f0f4f8",
+  "theme_color": "#0284c7",
+  "lang": "pl",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

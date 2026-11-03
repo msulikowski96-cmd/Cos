@@ -1,0 +1,14 @@
+packages:
+  "framer-motion": "For smooth page transitions and staggering list items to make it feel premium"
+  "date-fns": "For formatting relative match times (e.g., '2 hours ago')"
+  "clsx": "For conditional class names"
+  "tailwind-merge": "For merging tailwind classes safely"
+
+images:
+  - path: "artifacts/web/public/images/hero-bg.png"
+    description: "Dark, moody, atmospheric background with subtle magical blue and gold smoke or glowing runes, suitable for a professional gaming app background. Very dark overall tone."
+    aspect_ratio: "16:9"
+
+notes:
+  - Using provided API hooks from @workspace/api-client-react
+  - Expecting standard Riot Games API data formats

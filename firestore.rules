@@ -1,0 +1,93 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net - Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Common Security Helper Functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Schema Validation Helpers
+    function isValidUser(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             (!('email' in data) || (data.email is string && data.email.size() <= 256)) &&
+             (!('displayName' in data) || (data.displayName is string && data.displayName.size() <= 256)) &&
+             (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() <= 2048)) &&
+             (!('isAdmin' in data) || data.isAdmin is bool) &&
+             (!('createdAt' in data) || (data.createdAt is string && data.createdAt.size() <= 64)) &&
+             (!('lastLoginAt' in data) || (data.lastLoginAt is string && data.lastLoginAt.size() <= 64));
+    }
+
+    function isValidFavorite(data, userId) {
+      return data.keys().hasAll(['userId', 'gameName', 'tagLine', 'region', 'createdAt']) &&
+             data.keys().hasOnly(['userId', 'gameName', 'tagLine', 'region', 'createdAt']) &&
+             data.userId is string && data.userId == userId && data.userId == request.auth.uid &&
+             data.gameName is string && data.gameName.size() > 0 && data.gameName.size() <= 50 &&
+             data.tagLine is string && data.tagLine.size() > 0 && data.tagLine.size() <= 10 &&
+             data.region is string && data.region.size() > 0 && data.region.size() <= 10 &&
+             data.createdAt is string && data.createdAt.size() <= 64;
+    }
+
+    function isValidBuild(data, userId) {
+      return data.keys().hasAll(['userId', 'championName', 'role', 'createdAt']) &&
+             data.keys().hasOnly(['userId', 'championName', 'role', 'notes', 'createdAt']) &&
+             data.userId is string && data.userId == userId && data.userId == request.auth.uid &&
+             data.championName is string && data.championName.size() > 0 && data.championName.size() <= 50 &&
+             data.role is string && data.role.size() > 0 && data.role.size() <= 20 &&
+             (!('notes' in data) || (data.notes is string && data.notes.size() <= 1000)) &&
+             data.createdAt is string && data.createdAt.size() <= 64;
+    }
+
+    // User Profile Rules
+    match /users/{userId} {
+      allow get: if isOwner(userId) && isValidId(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidId(userId) && isValidUser(incoming());
+      allow update: if isOwner(userId) && isValidId(userId) && isValidUser(incoming()) &&
+                   (!('userId' in existing()) || incoming().userId == existing().userId);
+      allow delete: if isOwner(userId) && isValidId(userId);
+
+      // Subcollection: Favorite Summoners
+      match /favorites/{favoriteId} {
+        allow get: if isOwner(userId) && isValidId(favoriteId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(favoriteId) && isValidFavorite(incoming(), userId);
+        allow update: if false; // Favorites are immutable entries (delete and recreate)
+        allow delete: if isOwner(userId) && isValidId(favoriteId);
+      }
+
+      // Subcollection: Saved Champion Builds
+      match /builds/{buildId} {
+        allow get: if isOwner(userId) && isValidId(buildId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(buildId) && isValidBuild(incoming(), userId);
+        allow update: if isOwner(userId) && isValidId(buildId) && isValidBuild(incoming(), userId) &&
+                     incoming().userId == existing().userId &&
+                     incoming().createdAt == existing().createdAt &&
+                     incoming().diff(existing()).affectedKeys().hasOnly(['notes', 'role']);
+        allow delete: if isOwner(userId) && isValidId(buildId);
+      }
+    }
+  }
+}
