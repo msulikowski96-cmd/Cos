@@ -8,7 +8,7 @@ import {
   type Slot,
   type SpectatorGame,
 } from "@workspace/draft-core";
-import { PLATFORMS, RiotError, getAccount, getLiveGame, getTopMastery, riotEnabled } from "../draft/riot";
+import { PLATFORMS, RiotError, getAccount, getActivePlatform, getLiveGame, getTopMastery, riotEnabled } from "../draft/riot";
 import { EXPECTED_CHARS, aiEnabled, coach } from "../draft/ai";
 import { requireUsage } from "../middlewares/auth";
 
@@ -52,9 +52,19 @@ router.get("/player", limit(20, 60_000), async (req, res) => {
 
   try {
     const account = await getAccount(platform, gameName, tagLine);
+    // Używamy serwera, na którym gracz naprawdę gra — niezależnie od wybranego w formularzu.
+    const active = (await getActivePlatform(platform, account.puuid)) ?? platform;
+    // Przeciążony serwis meczów Riot (429/5xx) nie blokuje wczytania konta — strona sprawdzi mecz ponownie.
+    let liveUnavailable = false;
     const [mastery, live] = await Promise.all([
-      getTopMastery(platform, account.puuid).catch(() => []),
-      getLiveGame<SpectatorGame>(platform, account.puuid),
+      getTopMastery(active, account.puuid).catch(() => []),
+      getLiveGame<SpectatorGame>(active, account.puuid).catch((e: RiotError) => {
+        if (e?.status === 429 || e?.status === 502) {
+          liveUnavailable = true;
+          return null;
+        }
+        throw e;
+      }),
     ]);
     const pool = (mastery ?? [])
       .map((m) => ({ id: CHAMP_ID_BY_KEY[m.championId], level: m.championLevel, points: m.championPoints }))
@@ -62,9 +72,12 @@ router.get("/player", limit(20, 60_000), async (req, res) => {
     const supported = live && live.participants?.length === 10;
     res.json({
       account: { gameName: account.gameName, tagLine: account.tagLine },
+      region: active,
+      regionCorrected: active !== platform,
       pool,
       live: supported ? liveGameToDraft(live, account.puuid) : null,
       inUnsupportedGame: !!live && !supported,
+      liveUnavailable,
     });
   } catch (e) {
     const err = e as RiotError;

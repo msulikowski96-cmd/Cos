@@ -50,7 +50,8 @@ async function riotGet<T>(url: string, ttlMs: number, allow404 = false): Promise
       return null;
     }
     if (res.status === 429 && attempt < 2) {
-      const wait = Math.min(Number(res.headers.get("Retry-After") ?? 1) * 1000, 8000);
+      // Riot podaje, ile czekać (serwis meczów na żywo potrafi zwrócić np. 9 s przy przeciążeniu).
+      const wait = Math.min(Number(res.headers.get("Retry-After") ?? 1) * 1000, 10_000);
       await new Promise((r) => setTimeout(r, Math.max(wait, 1000)));
       continue;
     }
@@ -75,6 +76,25 @@ export function getAccount(platform: string, gameName: string, tagLine: string) 
     `https://${cluster}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(gameName)}/${encodeURIComponent(tagLine)}`,
     10 * 60_000,
   ) as Promise<Account>;
+}
+
+/**
+ * Serwer, na którym gracz faktycznie gra (np. "euw1"). Riot zwraca go dla puuid, więc nie musimy
+ * polegać na regionie wybranym ręcznie — zły wybór EUNE/EUW dawał pustą pulę i „nie jesteś w grze”.
+ */
+export async function getActivePlatform(platform: string, puuid: string): Promise<string | null> {
+  const cluster = PLATFORMS[platform]?.cluster === "sea" ? "asia" : (PLATFORMS[platform]?.cluster ?? "europe");
+  try {
+    const r = await riotGet<{ region?: string }>(
+      `https://${cluster}.api.riotgames.com/riot/account/v1/region/by-game/lol/by-puuid/${puuid}`,
+      60 * 60_000,
+      true,
+    );
+    const region = r?.region?.toLowerCase();
+    return region && PLATFORMS[region] ? region : null;
+  } catch {
+    return null;
+  }
 }
 
 export interface Mastery {

@@ -12,9 +12,14 @@ export interface ServerStatus {
 
 export interface PlayerResponse {
   account: { gameName: string; tagLine: string };
+  /** serwer, na którym gracz faktycznie gra (wykryty przez Riot) */
+  region?: string;
+  regionCorrected?: boolean;
   pool: { id: string; level: number; points: number }[];
   live: LiveDraft | null;
   inUnsupportedGame: boolean;
+  /** Riot chwilowo nie odpowiedział o mecz na żywo (przeciążenie) — sprawdzimy ponownie */
+  liveUnavailable?: boolean;
 }
 
 export interface CoachResponse {
