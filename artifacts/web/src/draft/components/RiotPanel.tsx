@@ -112,7 +112,7 @@ export function RiotPanel({ status, player, onPlayer, onLive }: Props) {
                   ? "Riot chwilowo nie odpowiada o mecze na żywo (przeciążenie po ich stronie). Sprawdzę ponownie za chwilę — pula championów już jest wczytana."
                 : player.inUnsupportedGame
                   ? "Jesteś w trybie, którego nie analizujemy (np. Arena). Podpowiedzi uwzględniają twoją pulę championów."
-                  : "Riot nie pokazuje jeszcze twojego meczu. Mecz jest widoczny dopiero od ekranu ładowania (nie w trakcie wyboru championów). Podpowiedzi już uwzględniają twoją pulę."
+                  : "Riot nie pokazuje twojego meczu. Mecz jest widoczny dopiero od ekranu ładowania (nie w trakcie wyboru championów). Jeśli grasz, a nadal go nie widać, masz prawdopodobnie włączony tryb streamera — Riot ukrywa wtedy twój mecz przed aplikacjami. Wpisz Riot ID kogoś z twojej drużyny albo wyłącz w kliencie ukrywanie przed aplikacjami zewnętrznymi."
               : "Podaj Riot ID: wczytamy oba składy z trwającego meczu i dopasujemy podpowiedzi do championów, którymi grasz najwięcej."}
           </p>
           {player && player.regionCorrected && (
