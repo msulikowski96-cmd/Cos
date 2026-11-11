@@ -22,8 +22,11 @@ beforeAll(async () => {
     const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
     if (url.startsWith("http://127.0.0.1")) return realFetch(input, init);
     calls.push(url);
+    if (url.includes("/accounts/by-riot-id/Zajety/")) return json({ puuid: "busy", gameName: "Zajety", tagLine: "EUNE" });
+    if (url.includes("/active-games/by-summoner/busy")) return new Response("{}", { status: 429, headers: { "retry-after": "0" } });
     if (url.includes("/accounts/by-riot-id/Nikt/")) return json({ status: { status_code: 404 } }, 404);
     if (url.includes("/accounts/by-riot-id/")) return json({ puuid: "p1", gameName: "Gracz", tagLine: "EUNE" });
+    if (url.includes("/region/by-game/lol/by-puuid/")) return json({ puuid: "p1", game: "lol", region: "eun1" });
     if (url.includes("/champion-masteries/")) return json([{ championId: key("Jinx"), championLevel: 7, championPoints: 250000 }]);
     if (url.includes("/active-games/")) {
       const t = (ids: string[], team: number) =>
@@ -76,6 +79,27 @@ describe("serwer API", () => {
     expect(calls.some((u) => u.startsWith("https://europe.api.riotgames.com/riot/account/v1/"))).toBe(true);
     expect(calls.some((u) => u.startsWith("https://eun1.api.riotgames.com/lol/spectator/v5/"))).toBe(true);
   });
+
+  it("sam wykrywa serwer gracza, gdy w formularzu wybrano zły region", async () => {
+    calls.length = 0;
+    const r = await realFetch(`${base}/api/draft/player?region=euw1&riotId=${encodeURIComponent("Gracz#EUNE")}`);
+    const body: any = await r.json();
+    expect(r.status).toBe(200);
+    expect(body.region).toBe("eun1");
+    expect(body.regionCorrected).toBe(true);
+    expect(body.live.draft.blue[3]).toBe("Jinx");
+    // mecz pochodzi z EUNE (wykrytego serwera); do EUW (wybranego w formularzu) nie było zapytań o mecz ani mastery
+    expect(calls.some((u) => u.startsWith("https://euw1.api.riotgames.com/lol/"))).toBe(false);
+  });
+
+  it("przeciążony serwis meczów Riot nie blokuje wczytania konta", async () => {
+    const r = await realFetch(`${base}/api/draft/player?region=eun1&riotId=${encodeURIComponent("Zajety#EUNE")}`);
+    const body: any = await r.json();
+    expect(r.status).toBe(200);
+    expect(body.live).toBeNull();
+    expect(body.liveUnavailable).toBe(true);
+    expect(body.pool.length).toBeGreaterThan(0);
+  }, 30_000);
 
   it("zwraca czytelny błąd dla nieistniejącego gracza i złych danych", async () => {
     const nf = await realFetch(`${base}/api/draft/player?region=eun1&riotId=${encodeURIComponent("Nikt#123")}`);

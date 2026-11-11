@@ -5,6 +5,8 @@ import { fetchPlayer, type PlayerResponse, type ServerStatus } from "../api";
 import type { LiveDraft } from "@workspace/draft-core";
 
 const STORE = "nd-riot";
+const POLL_MS = 45_000;
+const WATCH_MS = 15 * 60_000;
 
 function load(): { region: string; riotId: string } {
   // Wejście z innej części aplikacji (np. „Analizuj draft” w meczu na żywo): /draft?riot=Nazwa%23TAG&region=euw1
@@ -36,29 +38,53 @@ export function RiotPanel({ status, player, onPlayer, onLive }: Props) {
   const [error, setError] = useState<string | null>(null);
   const autoLoad = typeof window !== "undefined" && new URLSearchParams(window.location.search).has("riot");
 
-  const connect = async (e?: FormEvent) => {
+  const [watchUntil, setWatchUntil] = useState(0);
+  const [lastCheck, setLastCheck] = useState<number | null>(null);
+
+  const connect = async (e?: FormEvent, silent = false) => {
     e?.preventDefault();
     if (!riotId.includes("#")) {
       setError("Wpisz Riot ID razem z tagiem, np. Faker#KR1.");
       return;
     }
-    setBusy(true);
-    setError(null);
+    if (!silent) {
+      setBusy(true);
+      setError(null);
+    }
     try {
       const p = await fetchPlayer(region, riotId);
       onPlayer(p);
+      setLastCheck(Date.now());
       if (p.live) onLive(p.live);
+      // Serwer wykrywa, gdzie gracz naprawdę gra — zapamiętujemy ten region.
+      const realRegion = p.region ?? region;
+      if (realRegion !== region) setRegion(realRegion);
+      if (!silent && !p.live) setWatchUntil(Date.now() + WATCH_MS);
       try {
-        localStorage.setItem(STORE, JSON.stringify({ region, riotId }));
+        localStorage.setItem(STORE, JSON.stringify({ region: realRegion, riotId }));
       } catch {
         /* bez pamięci przeglądarki też działa */
       }
     } catch (err) {
-      setError((err as Error).message);
+      // Przy automatycznym sprawdzaniu chwilowy błąd (np. limit zapytań Riot) nie przerywa czekania.
+      if (!silent) setError((err as Error).message);
     } finally {
-      setBusy(false);
+      if (!silent) setBusy(false);
     }
   };
+
+  // Gdy gracz jeszcze nie jest w grze, sprawdzamy sami co 45 s przez 15 minut.
+  // Riot pokazuje mecz dopiero od ekranu ładowania — wybór championów nie jest widoczny.
+  const waiting = !!player && !player.live && Date.now() < watchUntil;
+  useEffect(() => {
+    if (!waiting) return;
+    const t = setInterval(() => {
+      if (Date.now() > watchUntil) setWatchUntil(0);
+      else void connect(undefined, true);
+    }, POLL_MS);
+    return () => clearInterval(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [waiting, watchUntil, region, riotId]);
 
   // Przyszliśmy z linku z Riot ID — wczytaj od razu, bez klikania.
   useEffect(() => {
@@ -82,11 +108,23 @@ export function RiotPanel({ status, player, onPlayer, onLive }: Props) {
             {player
               ? player.live
                 ? "Jesteś w grze — draft z meczu na żywo został wczytany. Podpowiedzi uwzględniają twoją pulę championów."
+                : player.liveUnavailable
+                  ? "Riot chwilowo nie odpowiada o mecze na żywo (przeciążenie po ich stronie). Sprawdzę ponownie za chwilę — pula championów już jest wczytana."
                 : player.inUnsupportedGame
                   ? "Jesteś w trybie, którego nie analizujemy (np. Arena). Podpowiedzi uwzględniają twoją pulę championów."
-                  : "Nie jesteś teraz w grze. Podpowiedzi uwzględniają twoją pulę championów — odśwież, gdy mecz wystartuje."
+                  : "Riot nie pokazuje jeszcze twojego meczu. Mecz jest widoczny dopiero od ekranu ładowania (nie w trakcie wyboru championów). Podpowiedzi już uwzględniają twoją pulę."
               : "Podaj Riot ID: wczytamy oba składy z trwającego meczu i dopasujemy podpowiedzi do championów, którymi grasz najwięcej."}
           </p>
+          {player && player.regionCorrected && (
+            <p className="mt-1 text-xs text-gold">Wykryto twój serwer: {status.regions.find((r) => r.id === player.region)?.label ?? player.region}.</p>
+          )}
+          {waiting && (
+            <p className="mt-1 flex items-center gap-1.5 text-xs text-subtle" role="status">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-good" aria-hidden />
+              Czekam na mecz — sprawdzam automatycznie co 45 s
+              {lastCheck ? ` (ostatnio ${new Date(lastCheck).toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit", second: "2-digit" })})` : ""}.
+            </p>
+          )}
         </div>
         {player && (
           <div className="flex gap-2">
