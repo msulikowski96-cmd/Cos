@@ -282,7 +282,7 @@ function NotInGameView({ gameName, tagLine, region, onRefetch, errorCode, errorH
               <p className="text-[10px] text-amber-700 leading-relaxed mb-2">
                 Jeśli grasz, ale Nexus Draft nie wykrywa meczu — prawdopodobnie masz włączone <strong>ograniczenie danych spectator</strong> w kliencie LoL.
               </p>
-              <div className="flex items-start gap-2 bg-white/60 rounded-lg px-3 py-2 border border-amber-200/50">
+              <div className="flex items-start gap-2 bg-[#121926]/80 rounded-lg px-3 py-2 border border-amber-500/25">
                 <Settings className="w-3.5 h-3.5 text-amber-600 mt-0.5 flex-shrink-0" />
                 <div className="text-[10px] text-amber-800 leading-relaxed">
                   <strong>Jak naprawić:</strong><br />

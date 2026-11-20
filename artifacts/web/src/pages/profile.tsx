@@ -267,7 +267,7 @@ function LiveGameBanner({ data, selfPuuid }: { data: any; selfPuuid?: string }) 
 
   return (
     <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="rounded-2xl overflow-hidden mb-5 border"
-      style={{ background: "linear-gradient(135deg, #12271f 0%, white 100%)", borderColor: "#2a5c45" }}>
+      style={{ background: "linear-gradient(135deg, #12271f 0%, #121926 100%)", borderColor: "#2a5c45" }}>
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2.5 border-b" style={{ borderColor: "#12271f", background: "#12271f" }}>
         <div className="flex items-center gap-2.5">
@@ -2355,7 +2355,7 @@ export default function Profile() {
 
                 {!isLoadingAnalysis && analysis?.predictedTier && (
                   <div className="rounded-xl p-3 relative overflow-hidden" style={{
-                    background: "linear-gradient(135deg, #1f1a33, white)",
+                    background: "linear-gradient(135deg, #1f1a33, #121926)",
                     border: "1px solid #4a3d80",
                   }}>
                     <p className="text-[9px] uppercase tracking-[0.15em] font-bold mb-2 flex items-center gap-1" style={{ color: "#9c7bff" }}>
