@@ -635,7 +635,7 @@ function MatchAnalysisSection({ participants, teams, duration }: { participants:
 
       {/* Per-player breakdown */}
       <div className="glass-panel p-4">
-        <p className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground mb-3">Analiza graczów — kliknij, żeby rozwinąć</p>
+        <p className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground mb-3">Analiza graczy — kliknij, żeby rozwinąć</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           <div className="space-y-1.5">
             <p className="text-[9px] font-bold text-blue-400 uppercase tracking-widest px-1 mb-1">Drużyna Niebieska</p>
