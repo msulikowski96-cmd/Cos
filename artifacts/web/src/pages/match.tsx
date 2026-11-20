@@ -678,6 +678,7 @@ export default function MatchPage() {
     queryKey: ["match", matchId, region],
     queryFn: async () => {
       const r = await fetch(`${BASE_URL}/api/match/${matchId}?region=${region}`);
+      if (r.status === 401) throw new Error("unauthorized");
       if (!r.ok) throw new Error("Błąd pobierania danych meczu");
       return r.json();
     },
@@ -700,7 +701,15 @@ export default function MatchPage() {
       <Link href={backUrl} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6">
         <ChevronLeft className="w-4 h-4" /> Powrót
       </Link>
-      <p className="text-muted-foreground">Nie można załadować danych meczu.</p>
+      {(error as Error | null)?.message === "unauthorized" ? (
+        <div className="section mx-auto max-w-md">
+          <p className="font-display text-xl font-bold uppercase">Szczegóły meczu po zalogowaniu</p>
+          <p className="mt-1 text-sm text-muted-foreground">Załóż darmowe konto, żeby zobaczyć pełne statystyki wszystkich 10 graczy, przedmioty i analizę meczu.</p>
+          <Link href="/auth" className="btn btn-gold mt-4 inline-flex">Zaloguj się</Link>
+        </div>
+      ) : (
+        <p className="text-muted-foreground">Nie można załadować danych meczu.</p>
+      )}
     </div>
   );
 

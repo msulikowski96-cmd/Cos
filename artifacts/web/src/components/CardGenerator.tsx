@@ -33,11 +33,12 @@ export default function CardGenerator({ gameName, tagLine, region, rankedEntry }
         credentials: "include",
         body: JSON.stringify({ gameName, tagLine, region, rankedEntry: rankedEntry ?? null }),
       });
+      if (res.status === 401) throw new Error("Zaloguj się, aby wygenerować kartę gracza.");
       if (!res.ok) {
         let msg = "Błąd generowania karty.";
         try {
           const json = await res.json();
-          if (json.error) msg = json.error;
+          if (json.message || json.error) msg = json.message ?? json.error;
         } catch {}
         throw new Error(msg);
       }
@@ -95,7 +96,10 @@ export default function CardGenerator({ gameName, tagLine, region, rankedEntry }
         <div className="flex items-start gap-2 p-3 rounded-xl text-xs"
           style={{ background: "#2a1519", border: "1px solid #2a1519", color: "#f0545c" }}>
           <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-          <span>{error}</span>
+          <span>
+            {error}
+            {error.startsWith("Zaloguj") && <a href="/auth" className="ml-1 font-bold underline">Zaloguj się</a>}
+          </span>
         </div>
       )}
 
