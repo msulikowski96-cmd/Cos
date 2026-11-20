@@ -237,7 +237,7 @@ export default function AdminPage() {
                       key={u.id}
                       style={{
                         borderBottom: i < filtered.length - 1 ? "1px solid #172031" : "none",
-                        background: u.isActive ? "white" : "#121926",
+                        background: u.isActive ? "#172031" : "#121926",
                         opacity: u.isActive ? 1 : 0.6,
                       }}
                     >

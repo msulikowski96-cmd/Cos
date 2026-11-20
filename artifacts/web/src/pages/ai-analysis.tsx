@@ -604,7 +604,7 @@ function AiAnalysisInner() {
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   style={{
-                    background: "linear-gradient(135deg, #262418, white)",
+                    background: "linear-gradient(135deg, #262418, #121926)",
                     border: "1px solid #6b5a35",
                     borderRadius: 14, padding: "18px 16px 16px",
                     overflow: "hidden",
@@ -1003,7 +1003,7 @@ function AiAnalysisInner() {
                 transition={{ delay: 0.38 }}
                 style={{
                   padding: "18px 20px",
-                  background: "linear-gradient(135deg, #2a2212, white)",
+                  background: "linear-gradient(135deg, #2a2212, #121926)",
                   border: "1px solid #6b4f22", borderRadius: 12, textAlign: "center",
                 }}
               >

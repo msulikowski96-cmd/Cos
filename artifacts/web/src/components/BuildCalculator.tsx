@@ -451,7 +451,7 @@ function BuildResultPanel({ result, myChampId, allChampions, lane }: {
       )}
 
       {/* Summoner spells */}
-      <div className="rounded-xl p-4 space-y-3" style={{ background: "linear-gradient(135deg, #2a2212, white)", border: "1px solid #2a2212" }}>
+      <div className="rounded-xl p-4 space-y-3" style={{ background: "linear-gradient(135deg, #2a2212, #121926)", border: "1px solid #2a2212" }}>
         <p className="text-[9px] uppercase tracking-[0.15em] font-bold text-muted-foreground">✦ Czarownicy</p>
         <div className="flex items-center gap-3">
           <SummonerIcon spell={summs.spell1} />
@@ -464,7 +464,7 @@ function BuildResultPanel({ result, myChampId, allChampions, lane }: {
       </div>
 
       {/* Runes */}
-      <div className="rounded-xl p-4 space-y-4" style={{ background: "linear-gradient(135deg, #172031, white)", border: "1px solid #233047" }}>
+      <div className="rounded-xl p-4 space-y-4" style={{ background: "linear-gradient(135deg, #172031, #121926)", border: "1px solid #233047" }}>
         <p className="text-[9px] uppercase tracking-[0.15em] font-bold" style={{ color: "hsl(240,60%,45%)", fontFamily: "'Rajdhani',sans-serif" }}>
           ✦ Runy
         </p>
