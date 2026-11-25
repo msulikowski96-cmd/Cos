@@ -70,7 +70,8 @@
     "vite": "^7.3.5",
     "wouter": "^3.3.5",
     "zod": "^3.25.76",
-    "@workspace/draft-core": "*"
+    "@workspace/draft-core": "*",
+    "@workspace/content": "*"
   },
   "dependencies": {
     "@ffmpeg/core": "0.12.6",

@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search, ChevronRight, BarChart3, Zap, Shield, Users, Clock, X, Activity, Heart, Sparkles, Swords } from "lucide-react";
 import { getFavorites, toggleFavorite, type Favorite } from "@/lib/favorites";
 import { usePageTitle } from "@/lib/usePageTitle";
+import { ARTICLES } from "@workspace/content";
+import { ArticleCard } from "@/pages/article";
 
 const HISTORY_KEY = "nexus_sight_history";
 const MAX_HISTORY = 8;
@@ -338,6 +340,22 @@ export default function Home() {
           </span>
           <ChevronRight className="h-5 w-5 shrink-0 text-subtle transition-transform group-hover:translate-x-1 group-hover:text-gold" aria-hidden />
         </Link>
+
+        <section aria-labelledby="guides-heading" className="mt-14 w-full max-w-4xl text-left">
+          <div className="flex items-end justify-between gap-3">
+            <h2 id="guides-heading" className="font-display text-2xl font-bold uppercase tracking-wide">
+              Poradniki
+            </h2>
+            <Link href="/poradnik" className="text-sm text-gold hover:underline">
+              Wszystkie poradniki →
+            </Link>
+          </div>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            {ARTICLES.slice(0, 4).map((a) => (
+              <ArticleCard key={a.slug} a={a} />
+            ))}
+          </div>
+        </section>
 
         <section
           aria-labelledby="seo-intro-heading"

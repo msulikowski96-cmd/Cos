@@ -26,7 +26,8 @@
     "pino-http": "^10",
     "satori": "^0.26.0",
     "zod": "^3.25.76",
-    "@workspace/draft-core": "*"
+    "@workspace/draft-core": "*",
+    "@workspace/content": "*"
   },
   "devDependencies": {
     "@types/bcryptjs": "^3.0.0",

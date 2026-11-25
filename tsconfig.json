@@ -17,6 +17,9 @@
     },
     {
       "path": "./lib/draft-core"
+    },
+    {
+      "path": "./lib/content"
     }
   ]
 }
