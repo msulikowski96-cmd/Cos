@@ -14,12 +14,15 @@ export default function Footer() {
             </span>
           </div>
 
-          <nav className="flex items-center gap-4 text-xs">
+          <nav className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs">
             <Link href="/about">
               <span className="text-muted-foreground hover:text-primary transition-colors cursor-pointer">O nas</span>
             </Link>
             <Link href="/poradnik">
               <span className="text-muted-foreground hover:text-primary transition-colors cursor-pointer">Poradnik</span>
+            </Link>
+            <Link href="/poradnik/jak-dziala-nexus-draft">
+              <span className="text-muted-foreground hover:text-primary transition-colors cursor-pointer">Metodologia</span>
             </Link>
             <Link href="/privacy">
               <span className="text-muted-foreground hover:text-primary transition-colors cursor-pointer">Polityka Prywatności</span>
@@ -36,7 +39,7 @@ export default function Footer() {
             ani żadnej osoby oficjalnie zaangażowanej w tworzenie lub zarządzanie właściwościami Riot Games.
           </p>
           <span className="text-[10px] text-muted-foreground/40 tracking-wider uppercase" style={{ fontFamily: "'Rajdhani',sans-serif" }}>
-            Powered by Riot API
+            Kontakt: nexussight.kontakt@gmail.com
           </span>
         </div>
       </div>

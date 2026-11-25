@@ -254,6 +254,44 @@
   .prose-custom section {
     margin-bottom: 1.5rem;
   }
+  .prose-custom ol {
+    list-style: decimal;
+    padding-left: 1.5rem;
+    margin-bottom: 0.85rem;
+  }
+  .prose-custom h2 {
+    scroll-margin-top: 5rem;
+  }
+  .prose-custom .tip {
+    margin: 1.1rem 0;
+    padding: 0.75rem 1rem;
+    border-left: 3px solid #d2ad62;
+    border-radius: 0 10px 10px 0;
+    background: rgba(210, 173, 98, 0.08);
+  }
+  .prose-custom .tip p {
+    margin: 0;
+  }
+  .prose-custom .table-wrap {
+    overflow-x: auto;
+    margin-bottom: 1rem;
+  }
+  .prose-custom table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+  .prose-custom th,
+  .prose-custom td {
+    border: 1px solid #233047;
+    padding: 0.45rem 0.6rem;
+    text-align: left;
+  }
+  .prose-custom th {
+    background: #172031;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+  }
   .prose-custom strong {
     font-weight: 600;
     color: #ece6d6;

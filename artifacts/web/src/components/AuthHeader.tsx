@@ -1,11 +1,12 @@
 import { Link, useLocation } from "wouter";
-import { Swords, Users, Wrench, Shield, LogOut } from "lucide-react";
+import { Swords, Users, Wrench, Shield, LogOut, BookOpen } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 const NAV = [
   { href: "/", label: "Gracze", Icon: Users, match: (p: string) => p === "/" || /^\/(profile|champion|match|live|ai-analysis)\//.test(p) },
   { href: "/draft", label: "Draft", Icon: Swords, match: (p: string) => p.startsWith("/draft") },
   { href: "/optymalizator", label: "Build", Icon: Wrench, match: (p: string) => p.startsWith("/optymalizator") },
+  { href: "/poradnik", label: "Poradnik", Icon: BookOpen, match: (p: string) => p.startsWith("/poradnik") },
 ];
 
 /** Główny pasek aplikacji: logo, zakładki i logowanie — w stylu Nexus Draft. */
@@ -20,12 +21,12 @@ export default function AuthHeader() {
       className="sticky z-40 w-full border-b border-line bg-ink/90 backdrop-blur"
       style={{ top: "env(safe-area-inset-top, 0px)" }}
     >
-      <div className="gutter mx-auto flex max-w-7xl items-center gap-2 py-2 sm:gap-4">
+      <div className="gutter mx-auto flex max-w-7xl flex-wrap items-center gap-x-2 gap-y-1 py-2 sm:flex-nowrap sm:gap-4">
         <Link href="/" className="shrink-0 font-display text-xl font-extrabold uppercase leading-none tracking-wide">
           Nexus <span className="text-gold">Draft</span>
         </Link>
 
-        <nav className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto sm:ml-2" aria-label="Główne">
+        <nav className="order-last flex w-full min-w-0 items-center gap-1 overflow-x-auto sm:order-none sm:ml-2 sm:w-auto sm:flex-1" aria-label="Główne">
           {NAV.map(({ href, label, Icon, match }) => {
             const active = match(location);
             return (
@@ -38,20 +39,20 @@ export default function AuthHeader() {
                 }`}
               >
                 <Icon size={14} aria-hidden />
-                <span className={active ? "" : "hidden min-[420px]:inline"}>{label}</span>
+                <span className={active ? "" : "hidden min-[400px]:inline sm:hidden lg:inline"}>{label}</span>
               </Link>
             );
           })}
         </nav>
 
         {!loading && !user && (
-          <Link href="/auth" className="btn btn-gold shrink-0 !px-3 !py-1.5 !text-xs">
+          <Link href="/auth" className="btn btn-gold ml-auto shrink-0 !px-3 !py-1.5 !text-xs sm:ml-0">
             Zaloguj się
           </Link>
         )}
 
         {user && (
-          <div className="flex shrink-0 items-center gap-2 text-xs">
+          <div className="ml-auto flex shrink-0 items-center gap-2 text-xs sm:ml-0">
             {user.isAdmin ? (
               <Link href="/admin" className="flex items-center gap-1 rounded-md bg-gold-soft px-2 py-1.5 font-label font-bold uppercase tracking-wider text-gold" title="Panel admina">
                 <Shield size={14} aria-hidden />

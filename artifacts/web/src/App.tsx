@@ -17,6 +17,7 @@ const Privacy = lazy(() => import("@/pages/privacy"));
 const Terms = lazy(() => import("@/pages/terms"));
 const About = lazy(() => import("@/pages/about"));
 const Guide = lazy(() => import("@/pages/guide"));
+const ArticlePage = lazy(() => import("@/pages/article"));
 const Champion = lazy(() => import("@/pages/champion"));
 const MatchPage = lazy(() => import("@/pages/match"));
 const AiAnalysis = lazy(() => import("@/pages/ai-analysis"));
@@ -87,6 +88,7 @@ function Router() {
         <Route path="/terms" component={Terms} />
         <Route path="/about" component={About} />
         <Route path="/poradnik" component={Guide} />
+        <Route path="/poradnik/:slug" component={ArticlePage} />
         <Route path="/promo" component={Promo} />
 
         {/* Public app */}

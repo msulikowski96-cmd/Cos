@@ -10,6 +10,8 @@ import router from "./routes";
 import { logger } from "./lib/logger";
 import { generalLimit } from "./middlewares/rateLimit";
 import { attachUser } from "./middlewares/auth";
+import { sitemapXml } from "@workspace/content";
+import { renderIndexHtml } from "./lib/seo-html";
 
 const app: Express = express();
 
@@ -62,10 +64,16 @@ if (process.env.NODE_ENV === "production") {
   ];
   const clientDist = candidates.find((p) => fs.existsSync(path.join(p, "index.html")));
   if (clientDist) {
+    const template = fs.readFileSync(path.join(clientDist, "index.html"), "utf8");
+    app.get("/sitemap.xml", (_req, res) => {
+      res.type("application/xml").set("Cache-Control", "public, max-age=3600").send(sitemapXml());
+    });
     app.use(express.static(clientDist, { index: false, maxAge: "1h" }));
     app.get("/{*splat}", (req, res, next) => {
       if (req.path.startsWith("/api/")) return next();
-      res.sendFile(path.join(clientDist, "index.html"));
+      // Każdy adres dostaje własny tytuł, opis i treść (dla robotów); React przejmuje stronę po załadowaniu.
+      const { status, html } = renderIndexHtml(template, req.path);
+      res.status(status).type("html").set("Cache-Control", "no-cache").send(html);
     });
   } else {
     console.error("[app] Nie znaleziono zbudowanego frontendu (artifacts/web/dist/public). Uruchom npm run build.");
